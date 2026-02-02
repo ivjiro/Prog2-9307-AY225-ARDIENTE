@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Record System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Student Record System</h1>
+            <p class="identifier">Submitted by: Ardiente, Sofhia Nicole I. - 23-0328-307</p>
+        </header>
+
+        <main>
+            <section class="search-section">
+                <h2>Search Students</h2>
+                <div class="search-container">
+                    <div class="search-controls">
+                        <div class="form-group">
+                            <label for="searchColumn">Search by:</label>
+                            <select id="searchColumn" class="search-select">
+                                <option value="all">All Columns</option>
+                                <option value="StudentID">Student ID</option>
+                                <option value="first_name">First Name</option>
+                                <option value="last_name">Last Name</option>
+                            </select>
+                        </div>
+                        <div class="form-group search-input-group">
+                            <label for="searchInput">Search:</label>
+                            <input type="text" id="searchInput" placeholder="Type to search..." class="search-input">
+                        </div>
+                        <button type="button" id="clearSearchBtn" class="btn btn-clear-search">Clear Search</button>
+                    </div>
+                    <div class="record-info">
+                        <span id="recordCount" class="record-count-display">Total Records: 0</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="input-section">
+                <h2 id="formTitle">Add New Student</h2>
+                <form id="studentForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studentId">Student ID:</label>
+                            <input type="text" id="studentId" name="studentId" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentName">First Name:</label>
+                            <input type="text" id="studentName" name="studentName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentLastName">Last Name:</label>
+                            <input type="text" id="studentLastName" name="studentLastName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="labWork1">Lab Work 1:</label>
+                            <input type="number" id="labWork1" name="labWork1" min="0" max="100" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="labWork2">Lab Work 2:</label>
+                            <input type="number" id="labWork2" name="labWork2" min="0" max="100" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="labWork3">Lab Work 3:</label>
+                            <input type="number" id="labWork3" name="labWork3" min="0" max="100" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prelimExam">Prelim Exam:</label>
+                            <input type="number" id="prelimExam" name="prelimExam" min="0" max="100" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="attendance">Attendance:</label>
+                            <input type="number" id="attendance" name="attendance" min="0" max="100" value="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-add">Add Student</button>
+                        <button type="button" id="updateBtn" class="btn btn-update" style="display:none;">Update Student</button>
+                        <button type="button" id="cancelBtn" class="btn btn-cancel" style="display:none;">Cancel</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="table-section">
+                <h2>Student Records</h2>
+                <div class="pagination-controls">
+                    <span id="paginationInfo" class="pagination-info"></span>
+                    <button id="loadMoreBtn" class="btn btn-load-more" style="display:none;">Load More (50)</button>
+                    <button id="exportCsvBtn" class="btn btn-export">Export CSV</button>
+                </div>
+                <div class="table-container">
+                    <table id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Lab Work 1</th>
+                                <th>Lab Work 2</th>
+                                <th>Lab Work 3</th>
+                                <th>Prelim Exam</th>
+                                <th>Attendance</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Rows will be dynamically generated -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; Student Record System | Created by: Ardiente, Sofhia Nicole I. - 23-0328-307</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
