@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Top 10 Customers Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --card: #1a1a25;
+      --border: #2a2a3d;
+      --accent: #00e5ff;
+      --accent2: #7b61ff;
+      --accent3: #ff6b6b;
+      --text: #e8e8f0;
+      --muted: #6b6b8a;
+      --gold: #ffd700;
+      --silver: #c0c0d0;
+      --bronze: #cd7f32;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb.one { width: 500px; height: 500px; top: -100px; right: -100px; background: rgba(123,97,255,0.12); }
+    .glow-orb.two { width: 400px; height: 400px; bottom: -50px; left: -100px; background: rgba(0,229,255,0.08); }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .school-tag {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(0,229,255,0.3);
+      padding: 4px 14px;
+      border-radius: 2px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.6s 0.1s ease both;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(123,97,255,0.05));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .upload-zone:hover::before, .upload-zone.drag-over::before { opacity: 1; }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .upload-zone h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .upload-zone p {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: #33eeff;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,229,255,0.3);
+    }
+
+    #fileInput { display: none; }
+
+    /* Status */
+    .status {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      margin-top: 16px;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .status.error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: var(--accent3); }
+    .status.info  { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); color: var(--accent); }
+    .status.show  { display: flex; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: none;
+      gap: 16px;
+      margin-top: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .stats-bar.show { display: grid; grid-template-columns: repeat(3, 1fr); }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Report */
+    .report {
+      display: none;
+      margin-top: 40px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .report.show { display: block; }
+
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .report-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .report-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 14px 20px;
+      text-align: left;
+      font-weight: 400;
+    }
+
+    th:nth-child(1) { width: 70px; text-align: center; }
+    th:nth-child(2) { width: 220px; }
+    th:nth-child(3) { width: auto; }
+    th:nth-child(4) { width: 140px; text-align: right; }
+
+    td:nth-child(1) { width: 70px; text-align: center; }
+    td:nth-child(2) { width: 220px; }
+    td:nth-child(3) { width: auto; }
+    td:nth-child(4) { width: 140px; text-align: right; font-family: 'Space Mono', monospace; font-size: 13px; }
+
+    th:last-child { text-align: right; }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(42,42,61,0.5);
+      transition: background 0.2s;
+      animation: rowIn 0.4s ease both;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    td {
+      padding: 16px 20px;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .rank-1 { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
+    .rank-2 { background: rgba(192,192,208,0.15); color: var(--silver); border: 1px solid rgba(192,192,208,0.3); }
+    .rank-3 { background: rgba(205,127,50,0.15); color: var(--bronze); border: 1px solid rgba(205,127,50,0.3); }
+    .rank-other { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+
+    .publisher-name { font-weight: 600; }
+
+    .bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bar-bg {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 0%;
+    }
+
+    .sales-value { white-space: nowrap; min-width: 80px; }
+
+    /* Grand Total */
+    .grand-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(123,97,255,0.08));
+      border-top: 1px solid var(--border);
+      font-weight: 700;
+    }
+
+    .grand-total span:first-child {
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .grand-total span:last-child {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      color: var(--accent);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0,229,255,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* Animations */
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:none; } }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+    @keyframes spin     { to { transform:rotate(360deg); } }
+    @keyframes rowIn    { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:none; } }
+  </style>
+</head>
+<body>
+
+<div class="glow-orb one"></div>
+<div class="glow-orb two"></div>
+
+<div class="wrapper">
+
+  <header>
+    <div class="school-tag">University of Perpetual Help System DALTA · Molino Campus</div>
+    <h1>Top 10 Customers<br>Report</h1>
+    <p class="subtitle">By: Ardiente, Sofhia Nicole I. BSCS-DS</p>
+  </header>
+
+  <!-- Upload -->
+  <label class="upload-zone" id="dropZone" for="fileInput">
+    <span class="upload-icon">📂</span>
+    <h2>Drop your CSV file here</h2>
+    <p>Ex: vgchartz-2024.csv</p>
+    <span class="btn btn-primary">⬆ Browse File</span>
+    <input type="file" id="fileInput" accept=".csv" style="display:none" />
+  </label>
+
+  <div class="status" id="status"></div>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card">
+      <span class="stat-value" id="statRecords">—</span>
+      <span class="stat-label">Records Processed</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="statSkipped">—</span>
+      <span class="stat-label">Rows Skipped</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="statPublishers">—</span>
+      <span class="stat-label">Unique Publishers</span>
+    </div>
+  </div>
+
+  <!-- Report -->
+  <div class="report" id="report">
+    <div class="report-header">
+      <div class="report-title">📊 Top 10 Publishers by Sales</div>
+      <div class="report-meta" id="reportMeta"></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Publisher (Customer)</th>
+            <th style="text-align:left">Sales Distribution</th>
+            <th>Total Sales (M)</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="grand-total">
+        <span>Grand Total — Top 10</span>
+        <span id="grandTotal">—</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const CUSTOMER_COL = 'publisher';
+  const AMOUNT_COL   = 'total_sales';
+
+  const dropZone   = document.getElementById('dropZone');
+  const fileInput  = document.getElementById('fileInput');
+  const statusEl   = document.getElementById('status');
+  const statsBar   = document.getElementById('statsBar');
+  const reportEl   = document.getElementById('report');
+  const tableBody  = document.getElementById('tableBody');
+
+  // Drag & Drop
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) processFile(fileInput.files[0]);
+  });
+
+  function showStatus(msg, type = 'info', loading = false) {
+    statusEl.className = `status show ${type}`;
+    statusEl.innerHTML = loading
+      ? `<div class="spinner"></div><span>${msg}</span>`
+      : `<span>${type === 'error' ? '✖' : '✔'}</span><span>${msg}</span>`;
+  }
+
+  function processFile(file) {
+    // Validate
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      showStatus('File must have a .csv extension.', 'error'); return;
+    }
+
+    showStatus('Reading and processing file…', 'info', true);
+    statsBar.classList.remove('show');
+    reportEl.classList.remove('show');
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const text = e.target.result;
+        const { top10, totalRecords, skippedRows, uniquePublishers, fileName } = parseAndAggregate(text);
+        renderReport(top10, totalRecords, skippedRows, uniquePublishers, fileName || file.name);
+      } catch (err) {
+        showStatus(err.message, 'error');
+      }
+    };
+    reader.onerror = () => showStatus('Failed to read file.', 'error');
+    reader.readAsText(file);
+  }
+
+  function parseAndAggregate(text) {
+    const lines = text.split(/\r?\n/);
+    if (lines.length < 2) throw new Error('CSV file is empty or has no data rows.');
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const customerIdx = headers.indexOf(CUSTOMER_COL);
+    const amountIdx   = headers.indexOf(AMOUNT_COL);
+
+    if (customerIdx === -1) throw new Error(`Column "${CUSTOMER_COL}" not found in CSV headers.`);
+    if (amountIdx   === -1) throw new Error(`Column "${AMOUNT_COL}" not found in CSV headers.`);
+
+    const salesMap = {};
+    let totalRecords = 0, skippedRows = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const values = line.split(',');
+      const maxIdx = Math.max(customerIdx, amountIdx);
+
+      if (values.length <= maxIdx) { skippedRows++; continue; }
+
+      const customer  = values[customerIdx].trim();
+      const amountStr = values[amountIdx].trim();
+
+      if (!customer || !amountStr) { skippedRows++; continue; }
+
+      const amount = parseFloat(amountStr);
+      if (isNaN(amount)) { skippedRows++; continue; }
+
+      salesMap[customer] = (salesMap[customer] || 0) + amount;
+      totalRecords++;
+    }
+
+    if (Object.keys(salesMap).length === 0)
+      throw new Error('No valid sales data found. Please check your CSV.');
+
+    // Sort and get top 10
+    const sorted = Object.entries(salesMap)
+      .sort((a, b) => b[1] - a[1]);
+
+    const top10 = sorted.slice(0, 10);
+    const uniquePublishers = sorted.length;
+
+    return { top10, totalRecords, skippedRows, uniquePublishers };
+  }
+
+  function renderReport(top10, totalRecords, skippedRows, uniquePublishers, fileName) {
+    // Status
+    showStatus(`File loaded successfully — ${fileName}`, 'info');
+
+    // Stats
+    document.getElementById('statRecords').textContent    = totalRecords.toLocaleString();
+    document.getElementById('statSkipped').textContent    = skippedRows.toLocaleString();
+    document.getElementById('statPublishers').textContent = uniquePublishers.toLocaleString();
+    statsBar.classList.add('show');
+
+    // Report meta
+    const now = new Date();
+    document.getElementById('reportMeta').textContent =
+      `Generated ${now.toLocaleDateString()} · ${fileName}`;
+
+    // Table
+    const maxSales = top10[0][1];
+    let grandTotal = 0;
+    tableBody.innerHTML = '';
+
+    top10.forEach(([name, sales], i) => {
+      grandTotal += sales;
+      const rank = i + 1;
+      const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
+      const pct = ((sales / maxSales) * 100).toFixed(1);
+      const displayName = name.length > 32 ? name.slice(0, 29) + '…' : name;
+
+      const tr = document.createElement('tr');
+      tr.style.animationDelay = `${i * 60}ms`;
+      tr.innerHTML = `
+        <td><span class="rank-badge ${rankClass}">#${rank}</span></td>
+        <td><span class="publisher-name">${displayName}</span></td>
+        <td>
+          <div class="bar-wrap">
+            <div class="bar-bg"><div class="bar-fill" data-pct="${pct}"></div></div>
+            <small style="font-family:Space Mono,monospace;font-size:10px;color:var(--muted);min-width:36px">${pct}%</small>
+          </div>
+        </td>
+        <td><span class="sales-value">${sales.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span></td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+    document.getElementById('grandTotal').textContent =
+      grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    reportEl.classList.add('show');
+
+    // Animate bars after render
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        document.querySelectorAll('.bar-fill').forEach(bar => {
+          bar.style.width = bar.dataset.pct + '%';
+        });
+      }, 200);
+    });
+  }
+</script>
+</body>
+</html>
